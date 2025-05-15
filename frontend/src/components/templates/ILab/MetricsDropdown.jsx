@@ -1,92 +1,126 @@
 import {
+  Badge,
   MenuToggle,
   Select,
   SelectList,
   SelectOption,
-  Skeleton
+  Skeleton,
 } from "@patternfly/react-core";
-import { fetchGraphData, fetchSummaryData, setSelectedMetrics } from "@/actions/ilabActions";
+import {
+  fetchGraphData,
+  fetchMultiGraphData,
+  fetchSummaryData,
+  handleSummaryData,
+  toggleSelectedMetric,
+} from "@/actions/ilabActions";
 import { useDispatch, useSelector } from "react-redux";
 
 import PropTypes from "prop-types";
-import { cloneDeep } from "lodash";
-import { uid } from "@/utils/helper";
 import { useState } from "react";
 
 const MetricsSelect = (props) => {
   const { metrics, metrics_selected } = useSelector((state) => state.ilab);
-  const { item } = props;
+  const { ids } = props;
+
   /* Metrics select */
   const [isOpen, setIsOpen] = useState(false);
   const dispatch = useDispatch();
 
-  const toggle1 = (toggleRef, selected) => (
+  const toggle1 = (toggleRef) => (
     <MenuToggle
       ref={toggleRef}
       onClick={onToggleClick}
       isExpanded={isOpen}
-      style={{
-        width: "200px",
-      }}
+      badge={<Badge isRead>{`${metrics_selected.length} selected`}</Badge>}
     >
-      {selected}
+      Additional metrics
     </MenuToggle>
   );
 
-  const onToggleClick = () => {
+  const onToggleClick = async () => {
     setIsOpen(!isOpen);
   };
-  const onSelect = (_event, value) => {
-    console.log("selected", value);
-    const [run, metric] = value;
-    dispatch(setSelectedMetrics(run, metric));
-    dispatch(fetchGraphData(run, metric));
-    dispatch(fetchSummaryData(run, metric));
-    setIsOpen(false);
+  const onSelect = (_event, metric) => {
+    dispatch(toggleSelectedMetric(metric));
   };
-  const metricsDataCopy = cloneDeep(metrics);
+
+  const onOpenChange = async (nextOpen) => {
+    if (!nextOpen) {
+      // If we're closing, fetch data
+      if (ids.length === 1) {
+        await Promise.all([
+          await dispatch(fetchGraphData(ids[0])),
+          await dispatch(fetchSummaryData(ids[0])),
+        ]);
+      } else {
+        await Promise.all([
+          await dispatch(fetchMultiGraphData(ids)),
+          await dispatch(handleSummaryData(ids)),
+        ]);
+      }
+    };
+    setIsOpen(nextOpen);
+  };
 
   const getMetricsData = (id) => {
-    const data = metricsDataCopy?.filter((a) => a.uid === id);
-    return data;
+    const data = metrics?.filter((a) => a.uid === id);
+    return data?.metrics;
   };
-  const hasMetricsData = (uuid) => {
-    const hasData = getMetricsData(uuid).length > 0;
-
+  const hasAllMetricsData = (runs) => {
+    const hasData = Boolean(
+      metrics?.filter((i) => runs.includes(i.uid)).length === runs.length
+    );
     return hasData;
   };
+
+  // de-dup a "set" using object keys
+  var collector = {};
+  if (hasAllMetricsData(ids)) {
+    const datas = metrics.filter((a) => ids.includes(a.uid));
+    if (datas) {
+      datas.forEach((a) => {
+        if (a.metrics) {
+          a.metrics.forEach((k) => (collector[k] = true));
+        }
+      });
+    }
+  }
+  const all_metrics = Object.keys(collector).sort();
+
   /* Metrics select */
   return (
     <>
-      {hasMetricsData(item.id) ? (
+      {hasAllMetricsData(ids) ? (
         <Select
-          id="single-select"
+          id="checkbox-select"
+          role="menu"
           isOpen={isOpen}
-          selected={metrics_selected[item.id]}
+          selected={metrics_selected}
           onSelect={onSelect}
-          onOpenChange={(isOpen) => setIsOpen(isOpen)}
-          toggle={(ref) => toggle1(ref, metrics_selected[item.id])}
-          shouldFocusToggleOnSelect
+          onOpenChange={onOpenChange}
+          toggle={toggle1}
         >
           <SelectList>
-            {getMetricsData(item.id)[0]?.metrics.map((metric) => (
+            {all_metrics.map((metric) => (
               <SelectOption
-                key={uid()}
-                value={[item.id, metric]}
+                key={metric}
+                isSelected={metrics_selected.includes(metric)}
+                hasCheckbox
+                value={metric}
               >
                 {metric}
               </SelectOption>
             ))}
           </SelectList>
         </Select>
-      ):
-      <Skeleton width="33%" screenreaderText="Loaded 33% of content" />
-      }
+      ) : (
+        <Skeleton width="33%" screenreaderText="Loaded 33% of content" />
+      )}
     </>
   );
 };
 
 MetricsSelect.propTypes = {
-  item: PropTypes.object,
+  ids: PropTypes.array,
 };
 export default MetricsSelect;

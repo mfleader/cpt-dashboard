@@ -5,8 +5,8 @@ import {
   Menu,
   MenuContent,
   MenuItem,
-  MenuItemAction,
   MenuList,
+  Popover,
   Stack,
   StackItem,
   Title,
@@ -18,10 +18,17 @@ import Plot from "react-plotly.js";
 import PropTypes from "prop-types";
 import RenderPagination from "@/components/organisms/Pagination";
 import { cloneDeep } from "lodash";
-import { handleMultiGraph, handleSummaryData } from "@/actions/ilabActions.js";
+import {
+  fetchPeriods,
+  handleMultiGraph,
+  handleSummaryData,
+  fetchMetricsInfo,
+} from "@/actions/ilabActions.js";
 import { uid } from "@/utils/helper";
 import { useState } from "react";
 import ILabSummary from "./ILabSummary";
+import ILabMetadata from "./ILabMetadata";
+import MetricsSelect from "./MetricsDropdown";
 
 const IlabCompareComponent = () => {
   // const { data } = props;
@@ -42,6 +49,8 @@ const IlabCompareComponent = () => {
       setSelectedItems(selectedItems.filter((id) => id !== item));
     } else {
       setSelectedItems([...selectedItems, item]);
+      dispatch(fetchPeriods(item));
+      dispatch(fetchMetricsInfo(item));
     }
   };
   const dummy = () => {
@@ -73,12 +82,22 @@ const IlabCompareComponent = () => {
                     itemId={item.id}
                     isSelected={selectedItems.includes(item.id)}
                     actions={
-                      <MenuItemAction
-                        icon={<InfoCircleIcon aria-hidden />}
-                        actionId="code"
-                        onClick={() => console.log("clicked on code icon")}
-                        aria-label="Code"
-                      />
+                      <Popover
+                        triggerAction="hover"
+                        aria-label="Metadata popover"
+                        headerContent={<b>Metadata</b>}
+                        appendTo={() => document.body}
+                        hasNoPadding
+                        position="auto"
+                        className="mini-metadata"
+                        bodyContent={
+                          <div position="auto" className="mini-metadata">
+                            <ILabMetadata item={item} />
+                          </div>
+                        }
+                      >
+                        <Button icon={<InfoCircleIcon aria-hidden />}></Button>
+                      </Popover>
                     }
                   >
                     {`${new Date(item.begin_date).toLocaleDateString()} ${
@@ -98,6 +117,9 @@ const IlabCompareComponent = () => {
         />
       </div>
       <Stack>
+        <StackItem span={12} className="metrics-select">
+          <MetricsSelect ids={selectedItems} />
+        </StackItem>
         <StackItem span={12} className="summary-box">
           {isSummaryLoading ? (
             <div className="loader"></div>

@@ -24,6 +24,10 @@ import MultiSelectBox from "@/components/molecules/MultiSelectBox";
 import PropTypes from "prop-types";
 import SelectBox from "@/components/molecules/SelectBox";
 import { formatDate } from "@/utils/helper";
+import  ouiaId from "@/utils/ouiaDecorator";
+
+const DatePickerOuia = ouiaId("start_date_picker")(DatePicker);
+
 
 /**
  * A component that provides an all-in-one toolbar for the tables in this project.
@@ -141,7 +145,7 @@ const TableFilter = (props) => {
 
         <ToolbarContent className="date-filter" ouiaId="date_filter">
           <ToolbarItem>
-            <DatePicker
+            <DatePickerOuia
               onChange={(date) =>
                 startDateChangeHandler(formatDate(date), end_date)
               }
