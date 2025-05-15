@@ -27,7 +27,7 @@ import { formatDate } from "@/utils/helper";
 import  ouiaId from "@/utils/ouiaDecorator";
 
 const DatePickerOuia = ouiaId("start_date_picker")(DatePicker);
-
+const EndDatePicker = ouiaId("end_date_picker")(DatePicker);
 
 /**
  * A component that provides an all-in-one toolbar for the tables in this project.
@@ -157,7 +157,7 @@ const TableFilter = (props) => {
             to
           </ToolbarItem>
           <ToolbarItem>
-            <DatePicker
+            <EndDatePicker
               onChange={(date) =>
                 endDateChangeHandler(formatDate(date), start_date)
               }

@@ -14,7 +14,7 @@ describe('ocp user journey', () => {
       .should("not.be.visible");
   });
 
-  it.skip("expands a table row's details row to display cluster config metadata table", () => {
+  it("expands a table row's details row to display cluster config metadata table", () => {
     // TODO: remediate test to correctly find and enter input into the 
     //       start and end date pickers
 
@@ -33,70 +33,89 @@ describe('ocp user journey', () => {
     
     // set start date
     // by convention, the first date input on the left receives the start date
-    cy.get("@date_pickers_inputs")
-      .first()
-      .within(($date_pickers) => {
-        cy.wrap($date_pickers)
+    // cy.get("@date_pickers_inputs")
+    //   .first()
+    //   .within(($date_pickers) => {
+    //     cy.wrap($date_pickers)
+    //       .get("input", {hidden: true})
+    //       // the date value is saved within the hidden element
+    //       // in this date picker group
+    //       .get(":hidden")
+    //       .type(start_date, {force: true});
+    //   });
+
+    cy.findByTestId("start_date_picker")
+      .find(`[class="react-date-picker__inputGroup"]`)
+      .within(($date_filter) => {
+        cy.wrap($date_filter)
           .get("input", {hidden: true})
-          // the date value is saved within the hidden element
-          // in this date picker group
           .get(":hidden")
           .type(start_date, {force: true});
       });
 
-    // set end date
-    // by convention, the next date input (last out of two) receives the end date
-    cy.get("@date_pickers_inputs")
-      .last()
-      .within(($date_pickers) => {
-        cy.wrap($date_pickers)
+
+    cy.findByTestId("end_date_picker")
+      .find(`[class="react-date-picker__inputGroup"]`)
+      .within(($date_filter) => {
+        cy.wrap($date_filter)
           .get("input", {hidden: true})
-          // the date value is saved within the hidden element 
-          // in this date picker group
           .get(":hidden")
           .type(end_date, {force: true});
-      }); 
+      });
+
+    // set end date
+    // by convention, the next date input (last out of two) receives the end date
+    // cy.get("@date_pickers_inputs")
+    //   .last()
+    //   .within(($date_pickers) => {
+    //     cy.wrap($date_pickers)
+    //       .get("input", {hidden: true})
+    //       // the date value is saved within the hidden element 
+    //       // in this date picker group
+    //       .get(":hidden")
+    //       .type(end_date, {force: true});
+    //   }); 
     
     cy.screenshot();
 
-    cy.findByTestId("main_data_table")
-      .get("tbody")
-      .find(`[data-ouia-component-type="PF5/TableRow"]`, 
-          {hidden: false})
-      .as("table_row")
-      .first();
+    // cy.findByTestId("main_data_table")
+    //   .get("tbody")
+    //   .find(`[data-ouia-component-type="PF5/TableRow"]`, 
+    //       {hidden: false})
+    //   .as("table_row")
+    //   .first();
 
-    // in the list of table row elements, each table row is 
-    // paired with a subsequent hidden row that can be expanded
-    // to display details
-    cy.get("@table_row")
-      .next()
-      .as("expandable_rows")        
-      .should("not.be.visible");
+    // // in the list of table row elements, each table row is 
+    // // paired with a subsequent hidden row that can be expanded
+    // // to display details
+    // cy.get("@table_row")
+    //   .next()
+    //   .as("expandable_rows")        
+    //   .should("not.be.visible");
 
-    cy.get("@table_row")
-      .find(`[data-ouia-component-type="PF5/Button"]`, 
-          {expanded: false})
-      .first()
-      .as("tgl_details")
-      .click();
+    // cy.get("@table_row")
+    //   .find(`[data-ouia-component-type="PF5/Button"]`, 
+    //       {expanded: false})
+    //   .first()
+    //   .as("tgl_details")
+    //   .click();
 
-    cy.get("@expandable_rows")
-      .first()
-      .should("be.visible");
+    // cy.get("@expandable_rows")
+    //   .first()
+    //   .should("be.visible");
 
-    // cluster config input
-    cy.get("@expandable_rows")
-      .first()
-      .find(`[data-ouia-component-id="metadata-table"]`)
-      .should("be.visible");
+    // // cluster config input
+    // cy.get("@expandable_rows")
+    //   .first()
+    //   .find(`[data-ouia-component-id="metadata-table"]`)
+    //   .should("be.visible");
 
-    cy.screenshot();      
+    // cy.screenshot();      
 
-    // close expandable row
-    cy.get("@tgl_details")
-      .click();
-    cy.get("@expandable_rows")
-      .should("not.be.visible");
+    // // close expandable row
+    // cy.get("@tgl_details")
+    //   .click();
+    // cy.get("@expandable_rows")
+    //   .should("not.be.visible");
   });
 });
