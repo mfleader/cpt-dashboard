@@ -47,11 +47,43 @@ describe('ocp user journey', () => {
     cy.findByTestId("start_date_picker")
       .find(`[class="react-date-picker__inputGroup"]`)
       .within(($date_filter) => {
-        cy.wrap($date_filter)
-          .get("input", {hidden: true})
-          .get(":hidden")
-          .type(start_date, {force: true});
-      });
+          cy.wrap($date_filter)
+            .get("input", {hidden: true})
+            .first()
+            .invoke("val", start_date)
+            .trigger("input", {force: true})
+            .trigger("change", {force: true});
+
+        // cy.wrap($date_filter)
+          // .get("input", {hidden: true})
+          // .get(":hidden")
+          // .type(start_date, {force: true});
+
+        // cy.get('input.react-date-picker__inputGroup__month')
+        //   .clear({ force: true })
+        //   .type('03', { force: true })
+        //   .blur({ force: true });
+        // // day
+        // cy.get('input.react-date-picker__inputGroup__day')
+        //   .clear({ force: true })
+        //   .type('01', { force: true })
+        //   .blur({ force: true });
+        // // year
+        // cy.get('input.react-date-picker__inputGroup__year')
+        //   .clear({ force: true })
+        //   .type('2025', { force: true })
+        //   .blur({ force: true });
+
+      })
+      .parent()
+      .findByRole("button")
+      .click()
+    
+      cy.get("body")
+        .click(0, 0, {force: true});
+
+      cy.get(".error-banner")
+        .invoke("hide");
 
 
     cy.findByTestId("end_date_picker")
@@ -59,9 +91,37 @@ describe('ocp user journey', () => {
       .within(($date_filter) => {
         cy.wrap($date_filter)
           .get("input", {hidden: true})
-          .get(":hidden")
-          .type(end_date, {force: true});
-      });
+          .first()
+          .invoke("val", end_date)
+          .trigger("input", {force: true})
+          .trigger("change", {force: true})
+          
+        
+          // .get("input", {hidden: true})
+          // .get(":hidden")
+          // .type(end_date, {force: true});        
+
+        // cy.get('input.react-date-picker__inputGroup__month')
+        //   .clear({ force: true })
+        //   .type('03', { force: true })
+        //   .blur({ force: true });
+        // // day
+        // cy.get('input.react-date-picker__inputGroup__day')
+        //   .clear({ force: true })
+        //   .type('30', { force: true })
+        //   .blur({ force: true });
+        // // year
+        // cy.get('input.react-date-picker__inputGroup__year')
+        //   .clear({ force: true })
+        //   .type('2025', { force: true })
+        //   .blur({ force: true });
+      })
+      .parent()
+      .findByRole("button")
+      .click();
+
+      cy.get("body")
+        .click(0, 0, {force: true});      
 
     // set end date
     // by convention, the next date input (last out of two) receives the end date
